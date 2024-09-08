@@ -2,7 +2,6 @@
 #define EXPRESSION_CALC_HPP__
 
 #include <string>
-#include <stack>
 #include <deque>
 #include <map>
 #include <cmath>
@@ -24,7 +23,7 @@ enum SymbolPriority {
     OP_POWER      = 0x03,
 
     SY_BRACKET    = INT_MAX,
-    SY_SYMBOL     = 0x0100
+    SY_ALPHANUM   = 0x0100
 };
 
 struct Symbol {
@@ -52,8 +51,8 @@ struct ExpressionPart {
 typedef std::map<std::string, Symbol> mathSymbolMap_t;
 
 int mathSymbolsInit(mathSymbolMap_t map);
-std::string phaseDigit(std::string::const_reverse_iterator &riter);
-std::stack<ExpressionPart> strToSuffixExpList(const std::string exp);
+std::string phaseDigit(std::string::const_iterator &iter);
+std::deque<ExpressionPart> strToSuffixExpList(const std::string exp);
 
 
 #endif

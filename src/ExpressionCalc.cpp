@@ -23,29 +23,29 @@ int mathSymbolsInit(mathSymbolMap_t map)
     return 0;
 }
 
-std::string phaseDigit(std::string::const_reverse_iterator &riter)
+std::string phaseDigit(std::string::const_iterator &iter)
 {
-    auto rbeg = riter;
-    for ( ; isdigit(*riter) || *riter == '.'; ++riter)
+    auto beg = iter;
+    for ( ; isdigit(*iter) || *iter == '.'; ++iter)
     {
         continue;
     }
     
-    return std::string(riter.base(), rbeg.base());
+    return std::string(beg, iter);
 }
 
-std::stack<ExpressionPart> strToPrefixExpStack(const std::string exp)
+std::deque<ExpressionPart> strToPrefixExpStack(const std::string exp)
 {
-    std::stack<ExpressionPart> s1, ops;
-    auto iter = exp.crbegin();
+    std::deque<ExpressionPart> s1, ops;
+    auto iter = exp.cbegin();
 
-    while (iter != exp.crend())
+    while (iter != exp.cend())
     {
         if (std::isspace(*iter)) {
 	    ++iter;
             continue;
         } else if (std::isdigit(*iter)) {
-            s1.emplace(std::stod(phaseDigit(iter)));
+            s1.emplace_back(std::stod(phaseDigit(iter)));
         } else {
 	  // TODO: Symbol detect  
 	}
