@@ -34,6 +34,7 @@ struct Symbol {
     Symbol(void) = default;
     Symbol(SymbolPriority priority, BinaryOpFunc_t* func_pointer)
         : m_priority(priority), func_p(func_pointer) {};
+    ~Symbol() = default;
 };
 
 struct ExpressionPart {
@@ -51,7 +52,7 @@ struct ExpressionPart {
 typedef std::map<std::string, Symbol> mathSymbolMap_t;
 
 int mathSymbolsInit(mathSymbolMap_t map);
-std::string phaseDigit(const std::string str);
+std::string phaseDigit(std::string::const_reverse_iterator &riter);
 std::stack<ExpressionPart> strToSuffixExpList(const std::string exp);
 
 

@@ -23,30 +23,32 @@ int mathSymbolsInit(mathSymbolMap_t map)
     return 0;
 }
 
-std::string phaseDigit(const std::string str)
+std::string phaseDigit(std::string::const_reverse_iterator &riter)
 {
-    std::string::const_iterator iter;
-
-    for ( iter = str.begin(); isdigit(*iter) || *iter == '.'; iter++)
+    auto rbeg = riter;
+    for ( ; isdigit(*riter) || *riter == '.'; ++riter)
     {
         continue;
     }
     
-    return std::string(str.cbegin(), iter);
+    return std::string(riter.base(), rbeg.base());
 }
 
-std::stack<ExpressionPart> strToSuffixExpList(const std::string exp)
+std::stack<ExpressionPart> strToPrefixExpStack(const std::string exp)
 {
     std::stack<ExpressionPart> s1, ops;
+    auto iter = exp.crbegin();
 
-    for (auto iter = exp.begin(); iter != exp.end(); ++iter)
+    while (iter != exp.crend())
     {
         if (std::isspace(*iter)) {
+	    ++iter;
             continue;
-        }
-        else if (std::isdigit(*iter)) {
-            s1.emplace(std::stod(phaseDigit(std::string(iter, exp.end()))));
-        }
+        } else if (std::isdigit(*iter)) {
+            s1.emplace(std::stod(phaseDigit(iter)));
+        } else {
+	  // TODO: Symbol detect  
+	}
     }
 
     return s1;
