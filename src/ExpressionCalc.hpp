@@ -4,9 +4,11 @@
 #include <string>
 #include <deque>
 #include <map>
+#include <set>
 #include <cmath>
 #include <cctype>
 #include <climits>
+#include <stdexcept>
 
 // typedef double (AlphaSymbol_t)();
 // typedef double (UnaryOp_t)(double);
@@ -22,11 +24,14 @@ enum SymbolPriority {
     OP_FUNC       = 0x02,
     OP_POWER      = 0x03,
 
-    SY_BRACKET    = INT_MAX,
+    SY_BRACKET    = INT_MAX - 2,
+    SY_LBRACKET   = INT_MAX - 1,
+    SY_RBRACKET   = INT_MAX,
     SY_ALPHANUM   = 0x0100
 };
 
 struct Symbol {
+    const char *name;
     SymbolPriority m_priority;
     BinaryOpFunc_t *func_p;
 
@@ -46,13 +51,16 @@ struct ExpressionPart {
     ExpressionPart(void) = default;
     ExpressionPart(double number): m_type(ExpressionPartType::NUMBER), m_num(number) {};
     ExpressionPart(Symbol sym): m_type(ExpressionPartType::OPERATOR), m_op(sym) {};
+    ~ExpressionPart(void) = default;
 };
 
 typedef std::map<std::string, Symbol> mathSymbolMap_t;
 
-int mathSymbolsInit(mathSymbolMap_t map);
+int mathSymbolsInit(mathSymbolMap_t &map);
 std::string phaseDigit(std::string::const_iterator &iter);
-std::deque<ExpressionPart> strToSuffixExpList(const std::string exp);
+std::string phaseSymbol(std::string::const_iterator &iter);
+std::deque<ExpressionPart> strToSuffixExpDeque(const std::string exp);
+std::string suffixExpDequeToStr(const std::deque<ExpressionPart> suffix_exp);
 
 
 #endif
