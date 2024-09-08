@@ -5,8 +5,7 @@
 
 #include "ExpressionCalc.hpp"
 
-std::map<std::string, Symbol> mathSymbols;
-
+mathSymbolMap_t mathSymbols;
 
 int main(void) 
 {
