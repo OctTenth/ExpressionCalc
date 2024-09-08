@@ -56,10 +56,13 @@ struct ExpressionPart {
 
 typedef std::map<std::string, Symbol> mathSymbolMap_t;
 
+bool isPartOfSymbol(std::string str);
+bool isVaildSymbol(std::string str);
 int mathSymbolsInit(mathSymbolMap_t &map);
 std::string phaseDigit(std::string::const_iterator &iter);
-std::string phaseSymbol(std::string::const_iterator &iter);
+std::string phaseSymbol(std::string::const_iterator &iter, const std::string &exp);
 std::deque<ExpressionPart> strToSuffixExpDeque(const std::string exp);
+double evalSuffixExpDeque(std::deque<ExpressionPart> suffix_exp);
 std::string suffixExpDequeToStr(const std::deque<ExpressionPart> suffix_exp);
 
 

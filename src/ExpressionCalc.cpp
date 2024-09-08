@@ -1,8 +1,29 @@
 #include "ExpressionCalc.hpp"
 
 #include <sstream>
+#include <stack>
+#include <algorithm>
 
 extern mathSymbolMap_t mathSymbols;
+
+bool isPartOfSymbol(std::string str)
+{
+    for (auto iter = mathSymbols.cbegin(); iter != mathSymbols.cend(); ++iter)
+    {
+        if (iter->first.find(str) != std::string::npos)
+            return true;
+    }
+    return false;
+}
+bool isVaildSymbol(std::string str)
+{
+    for (auto iter = mathSymbols.cbegin(); iter != mathSymbols.cend(); ++iter)
+    {
+        if (str == iter->first)
+            return true;
+    }
+    return false;
+}
 
 int mathSymbolsInit(mathSymbolMap_t &map)
 {
@@ -15,7 +36,7 @@ int mathSymbolsInit(mathSymbolMap_t &map)
     map["*"].m_priority = SymP::OP_MULTIDIV;
     map["*"].func_p = static_cast<BinaryOpFunc_t*>([](double n1, double n2) -> double { return n1*n2; });
     map["/"].m_priority = SymP::OP_MULTIDIV;
-    map["/"].func_p = static_cast<BinaryOpFunc_t*>([](double n1, double n2) -> double { return n1*n2; });
+    map["/"].func_p = static_cast<BinaryOpFunc_t*>([](double n1, double n2) -> double { return n1/n2; });
     map["^"].m_priority = SymP::OP_POWER;
     map["^"].func_p = static_cast<BinaryOpFunc_t*>([](double n1, double n2) -> double { return std::pow(n1, n2); });
 
@@ -43,31 +64,27 @@ std::string phaseDigit(std::string::const_iterator &iter)
     return std::string(beg, iter);
 }
 
-std::string phaseSymbol(std::string::const_iterator &iter)
+std::string phaseSymbol(std::string::const_iterator &iter, const std::string &exp)
 {
-    std::set<std::string> op_set;
-
-    for ( auto mapIter = mathSymbols.cbegin(); mapIter != mathSymbols.cend(); mapIter++)
-    {
-        auto sym = mapIter->first;
-        if (sym.length() == 1) {
-            op_set.insert(sym);
-        }
-    }
+    // TODO: fix bug: when there is a symbol (e.g., rbracket) at the last of exp, the function couldn't phase it.
 
     auto beg = iter;
 
-    if (op_set.find(std::string() + *iter) != op_set.end()) {
-        ++iter;
-        return std::string(beg, iter);
-    }
-
-    for ( ; (std::isalpha(*iter)); ++iter)
+    for ( ++iter; *iter != '\0'; ++iter)
     {
-        continue;
+        std::string str(beg, iter);
+        if (isPartOfSymbol(str))
+        {
+            if (isVaildSymbol(str))
+            {
+                return str;
+            }
+            else
+                continue;
+        }
+        else 
+            throw std::runtime_error("Unknown symbol \"" + str + "\".");
     }
-    
-    return std::string(beg, iter);
 }
 
 void symPushToStack(std::deque<ExpressionPart> &s1, std::deque<ExpressionPart> &ops, Symbol &sym)
@@ -121,15 +138,11 @@ std::deque<ExpressionPart> strToSuffixExpDeque(const std::string exp)
             s1.emplace_back(std::stod(phaseDigit(iter)));
             continue;
         } else {
-            std::string symStr = phaseSymbol(iter);
+            std::string symStr = phaseSymbol(iter, exp);
             Symbol sym;
 
-            try {
-                sym = mathSymbols.at(symStr);
-            } catch (std::out_of_range &e) {
-                throw std::out_of_range("Unknown symbol \"" + symStr + "\".");
-            }
-            
+            sym = mathSymbols.at(symStr);
+
             symPushToStack(s1, ops, sym);
 	    }
     }
@@ -143,17 +156,46 @@ std::deque<ExpressionPart> strToSuffixExpDeque(const std::string exp)
     return s1;
 }
 
+double evalSuffixExpDeque(std::deque<ExpressionPart> suffix_exp)
+{
+    std::stack<double> nums;
+
+    while (suffix_exp.size() != 0)
+    {
+        auto deque_front = suffix_exp.front();
+
+        if (deque_front.m_type == NUMBER)
+        {
+            nums.push(deque_front.m_num);
+        }
+        else {
+            if (nums.size() < 2)
+                throw std::runtime_error("Invaild expression!");
+
+            auto stack_top = nums.top();
+            nums.pop();
+            auto stack_sec_top = nums.top();
+            nums.pop();
+
+            nums.push(deque_front.m_op.func_p(stack_sec_top, stack_top));
+        }
+
+        suffix_exp.pop_front();
+    }
+    return nums.top();
+}
+
 std::string suffixExpDequeToStr(std::deque<ExpressionPart> suffix_exp)
 {
     std::ostringstream oss;
 
     while (suffix_exp.size() != 0)
     {
-        auto d_front = suffix_exp.front();
-        if (d_front.m_type == NUMBER)
-            oss << d_front.m_num << ' ';
+        auto deque_front = suffix_exp.front();
+        if (deque_front.m_type == NUMBER)
+            oss << deque_front.m_num << ' ';
         else 
-            oss << d_front.m_op.name << ' ';
+            oss << deque_front.m_op.name << ' ';
 
         suffix_exp.pop_front();
     }

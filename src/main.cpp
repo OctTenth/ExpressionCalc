@@ -4,17 +4,10 @@
 
 mathSymbolMap_t mathSymbols;
 
-int main(void) 
+int main(int argc, char **argv) 
 {
     mathSymbolsInit(mathSymbols);
-    ExpressionPart expp(Symbol(SymbolPriority::OP_MULTIDIV, nullptr));
-    std::string str("1234.5-(233.99+444.22*66)");
-    auto iter = str.cbegin();
-    auto beg = iter;
-    auto sufexp = strToSuffixExpDeque(str);
-    std::cout << phaseDigit(iter) << std::endl 
-              << phaseSymbol(iter) << std::endl
-              << iter - beg << std::endl
-              << suffixExpDequeToStr(sufexp) << std::endl;
-
+    std::string str;
+    std::cin >> str;
+    std::cout << "> " << evalSuffixExpDeque(strToSuffixExpDeque(str)) << std::endl;
 }
